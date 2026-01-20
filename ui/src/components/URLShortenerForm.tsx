@@ -10,16 +10,31 @@ function URLShortenerForm() {
   } | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setShortUrl(null);
+  e.preventDefault();
+  setShortUrl(null);
+
+  try {
+    // 🚀 Pré-processar input: adicionar https:// se não tiver
+    let urlToSend = destination || "";
+    if (!/^https?:\/\//i.test(urlToSend)) {
+      urlToSend = `https://${urlToSend}`;
+    }
+
     const result = await axios
-      .post(`${SERVER_ENDPOINTS}/api/url`, {
-        destination,
-      })
+      .post(
+        `${SERVER_ENDPOINTS}/api/url`,
+        { destination: urlToSend }, // enviar URL corrigida
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      )
       .then((resp) => resp.data);
 
     setShortUrl(result);
+  } catch (err: any) {
+    console.error("Erro ao criar short URL:", err.response?.data);
   }
+}
 
   return (
     <Box pos="relative" zIndex="2" backgroundColor="white" padding="6">
